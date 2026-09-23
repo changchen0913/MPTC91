@@ -6,6 +6,17 @@ main{min-height:540px}
 #detail #unroll[hidden]{display:none}
 
 body{min-width:860px}#detail-description{font-size:16px}
+:root,body{background:#060708}
+#stage::after{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse 75% 70% at 55% 52%,transparent 45%,#00000080 100%)}
+header{position:absolute;top:0;left:5%;right:5%;margin:0;border-bottom:0;z-index:5;pointer-events:none}
+.brand{pointer-events:auto}
+.brand img{mix-blend-mode:normal}
+.brand span{color:#efe9e1}
+.brand small{color:#949aa4}
+main{height:100svh}
+.intro{top:18%}
+#loading,#error{background:#0a0c10;color:#7e858f}
+.loader{border-color:#282e38;border-top-color:#d7dbe1}
 #error span{max-width:430px;text-align:center;line-height:1.9;margin-top:10px}
 #detail{width:352px;padding:34px 32px 30px;background:#fffffff2;border:1px solid #fff;box-shadow:0 16px 52px #00000021;backdrop-filter:blur(22px);border-radius:26px}
 #detail .close{right:13px;top:13px;background:#eeeef2;color:#6a6a70}

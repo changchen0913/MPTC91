@@ -9,12 +9,12 @@
   <script type="importmap">{"imports":{"three":"./vendor/three.module.js"}}</script>
 </head>
 <body>
-  <header><a class="brand" href="./" aria-label="91週年紀念禮盒首頁"><img src="assets/logo-color.png" alt="91週年彩色紀念Logo" width="58" height="58"><span>憲兵訓練中心<small>週年紀念禮盒</small></span></a></header>
+  <header><a class="brand" href="./" aria-label="91週年紀念禮盒首頁"><img src="assets/logo-color.png" alt="91週年彩色紀念Logo" width="58" height="58"><span>憲兵訓練中心<small>91週年部慶</small></span></a></header>
   <main>
     <div class="intro"><p class="eyebrow">九十一載・初心如一</p><h1>淬火成香。<br>礪志成鋼。</h1><p class="subtitle">一份心意，三種珍藏。</p></div>
     <section id="stage" aria-label="可旋轉的3D紀念禮盒"><canvas id="scene" aria-label="拖曳旋轉禮盒，滾輪縮放。點擊盒蓋打開，再點選產品。"></canvas><div id="loading" role="status"><span class="loader"></span><p>正在準備你的禮盒</p></div><div id="error" hidden><p>無法啟動 3D 畫面</p><span>請使用支援 WebGL 的瀏覽器後重新載入。</span><button onclick="location.reload()">重新載入</button></div><div id="product-label" aria-hidden="true"></div></section>
     <aside id="detail" aria-hidden="true" inert><button id="close-detail" class="close" aria-label="放回禮盒">×</button><p id="detail-number" class="eyebrow"></p><h2 id="detail-title"></h2><p id="detail-subtitle"></p><p id="detail-description"></p><dl id="detail-spec"></dl><button id="unroll" class="secondary" hidden>展開滑鼠墊</button><button id="return" class="primary">放回禮盒 <span aria-hidden="true">↙</span></button></aside>
-    <div class="bottom"><div class="interaction-hint" id="hint">拖曳盒蓋開啟 <i>·</i> 拖曳空白處旋轉 <i>·</i> 滾輪縮放</div><div class="a11y-controls"><button id="toggle">打開禮盒</button><nav id="products" aria-label="選擇禮盒中的產品"><button data-product="0">咖啡包</button><button data-product="1">山形玻璃杯</button><button data-product="2">紀念滑鼠墊</button></nav></div></div>
+    <div class="bottom"><div class="a11y-controls"><button id="toggle">打開禮盒</button><nav id="products" aria-label="選擇禮盒中的產品"><button data-product="0">咖啡包</button><button data-product="1">山形玻璃杯</button><button data-product="2">紀念滑鼠墊</button></nav></div></div>
   </main>
   <script>if(location.protocol==='file:')document.addEventListener('DOMContentLoaded',function(){document.getElementById('loading').remove();var e=document.getElementById('error');e.querySelector('p').textContent='請透過網頁伺服器開啟';e.querySelector('span').textContent='瀏覽器不允許從本機檔案路徑（file://）載入 3D 模組。請將整個資料夾部署到網站主機，或在資料夾內啟動本機伺服器後以 http:// 開啟。';e.querySelector('button').remove();e.hidden=false;});</script>
   <script type="module" src="app.js"></script>
