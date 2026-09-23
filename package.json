@@ -1,0 +1,1 @@
+{"name":"mptc-91-gift-box","private":true,"type":"module","scripts":{"start":"node server.cjs","check":"node --check docs/app.js"}}

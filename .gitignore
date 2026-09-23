@@ -1,0 +1,6 @@
+node_modules/
+.DS_Store
+Thumbs.db
+
+# 本機部署工具設定，含綁帳號的 project_id
+.openai/
