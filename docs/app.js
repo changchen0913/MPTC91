@@ -8,7 +8,7 @@ const canvas = $('#scene'), stage = $('#stage');
 const data = [
  {name:'紀念咖啡包',en:'A MOMENT TO SAVOR',description:'將山巒與晨光，收藏進一杯日常。暖棕色包裝承載山岳意象，為每一次停歇，留下一份溫度。',spec:[['尺寸','10.1 × 8.2 公分'],['組合','6 入'],['設計','山巒・日光・暖棕色調']]},
  {name:'山形玻璃杯',en:'A LANDSCAPE IN YOUR HAND',description:'通透杯身之中，山峰靜靜佇立。厚實杯底承托起伏山形，白色 91 週年徽記，留下值得珍藏的時刻。',spec:[['尺寸','直徑 8.2 × 高 9.5 公分'],['外觀','透明杯身・立體山形杯底'],['紀念','91 週年白色徽記']]},
- {name:'紀念滑鼠墊',en:'EVERYDAY, WITH PURPOSE',description:'將守護的身影與綿延山景，延伸至日常桌面。金色線條穿過沉穩的大地色彩，細緻黑色包邊收束每一道風景。',spec:[['尺寸','25 × 30 公分'],['設計','憲兵剪影・山景・金色線條'],['收納','捲式收納・展開欣賞']]}
+ {name:'紀念滑鼠墊',en:'EVERYDAY, WITH PURPOSE',description:'以衛兵象徵守望，以硬漢碑承載精神，以山勢記錄歷程，並以向前延伸的幾何語彙，呈現91年傳承不止、持續前行的憲兵精神。',spec:[['尺寸','25 × 30 公分'],['設計','憲兵剪影・山景・金色線條'],['收納','捲式收納・展開欣賞']]}
 ];
 let renderer, scene, camera, controls, root, lid, flap, raycaster, floor, productEnv, inside;
 let items=[], focus=-1, lidTarget=0, lidAngle=0, unfold=0, unfoldTarget=0, matGeometry, stitches;
