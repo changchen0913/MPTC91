@@ -1,0 +1,17 @@
+{
+  "name": "憲兵訓練中心 91週年紀念禮盒",
+  "short_name": "91週年禮盒",
+  "description": "親手打開91週年紀念禮盒，旋轉欣賞咖啡包、山形玻璃杯與紀念滑鼠墊。",
+  "lang": "zh-Hant",
+  "start_url": "./",
+  "scope": "./",
+  "display": "fullscreen",
+  "orientation": "landscape",
+  "background_color": "#060708",
+  "theme_color": "#060708",
+  "icons": [
+    { "src": "assets/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
