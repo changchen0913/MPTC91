@@ -76,7 +76,19 @@ function makeCoffee(img){
 }
 function makeMat(img){
  const group=new THREE.Group();const imageTex=surface(1200,1440,ctx=>ctx.drawImage(img,0,0,1200,1440));
- const silhouette=surface(2048,2048,ctx=>{ctx.fillStyle='#000';ctx.fillRect(0,0,2048,2048);ctx.fillStyle='#fff';ctx.beginPath();ctx.roundRect(9,9,2030,2030,165);ctx.fill();});silhouette.colorSpace=THREE.NoColorSpace;
+ // The outline comes from the artwork itself: the grey backdrop is flood-filled in from the image
+ // edge until it meets the black binding, then pulled back two pixels to drop the light fringe.
+ // A fixed rounded rectangle can't follow corners that aren't all drawn to the same radius.
+ const silhouette=surface(img.width,img.height,ctx=>{
+  const w=img.width,h=img.height;ctx.drawImage(img,0,0);const im=ctx.getImageData(0,0,w,h),d=im.data,bg=new Uint8Array(w*h),stack=[];
+  const light=k=>d[k*4]*.3+d[k*4+1]*.59+d[k*4+2]*.11>90;
+  for(let x=0;x<w;x++)stack.push(x,(h-1)*w+x);for(let y=0;y<h;y++)stack.push(y*w,y*w+w-1);
+  while(stack.length){const k=stack.pop();if(bg[k]||!light(k))continue;bg[k]=1;const x=k%w;if(x>0)stack.push(k-1);if(x<w-1)stack.push(k+1);if(k>=w)stack.push(k-w);if(k<w*(h-1))stack.push(k+w);}
+  for(let pass=0;pass<2;pass++){const grown=bg.slice();for(let k=0;k<w*h;k++)if(bg[k]){const x=k%w;if(x>0)grown[k-1]=1;if(x<w-1)grown[k+1]=1;if(k>=w)grown[k-w]=1;if(k<w*(h-1))grown[k+w]=1;}bg.set(grown);}
+  // A break in the binding would let the fill run into the artwork; fall back to a plain rounded pad.
+  if(bg.reduce((s,v)=>s+v,0)>w*h*.15){ctx.fillStyle='#000';ctx.fillRect(0,0,w,h);ctx.fillStyle='#fff';ctx.beginPath();ctx.roundRect(w*.005,h*.005,w*.99,h*.99,w*.1);ctx.fill();return;}
+  for(let k=0;k<w*h;k++){const v=bg[k]?0:255;d[k*4]=d[k*4+1]=d[k*4+2]=v;d[k*4+3]=255;}ctx.putImageData(im,0,0);
+ });silhouette.colorSpace=THREE.NoColorSpace;
  matGeometry=new THREE.PlaneGeometry(7.5,6.25,160,64);
  const material=new THREE.MeshStandardMaterial({map:imageTex,color:0xbcbcbc,alphaMap:silhouette,alphaTest:.5,side:THREE.FrontSide,roughness:.94,metalness:0});
  const sheet=new THREE.Mesh(matGeometry,material);sheet.castShadow=true;sheet.receiveShadow=true;group.add(sheet);
