@@ -13,9 +13,19 @@ const data = [
 let renderer, scene, camera, controls, root, lid, flap, raycaster, floor, productEnv, inside;
 let items=[], focus=-1, lidTarget=0, lidAngle=0, unfold=0, unfoldTarget=0, matGeometry, stitches;
 let anim=null, ready=false, pointerDown=null, lastFocused=null, selecting=false, lidDrag=null, lidDeg=-1, lidOpen=null;
-const homeCam=new THREE.Vector3(1.9,10.43,8.44), homeTarget=new THREE.Vector3(-.69,1.98,1.08);
-// Putting a product back returns to an overhead read of the open box, not the closed-box opening shot.
-const boxCam=new THREE.Vector3(1.72,13.1,7.4), boxTarget=new THREE.Vector3(-.41,2.27,.52);
+// Camera shots as [position, target]. `home` opens on the closed box, `box` is the overhead read of
+// the open box after a product goes back, `focus` holds a lifted product (`mat` is wider for the pad).
+// Wide screens leave the left for the headline and the right for the detail card; tall ones stack
+// them, so the box sits low under the headline and a held product high above the bottom sheet.
+const shot=(a,b,c,d,e,f)=>[new THREE.Vector3(a,b,c),new THREE.Vector3(d,e,f)];
+const shots={
+ wide:{fov:36,home:shot(1.9,10.43,8.44,-.69,1.98,1.08),box:shot(1.72,13.1,7.4,-.41,2.27,.52),focus:shot(1.9,7.6,10.2,-.55,4.6,1.6),mat:shot(2.8,8.9,15.8,-.55,4.6,1.6)},
+ tall:{fov:50,home:shot(3.4,17.5,13.2,.7,3.3,-.9),box:shot(2.4,20,9.8,.3,3.2,-.4),focus:shot(-.1,8.4,12.6,-2,3.4,1.8),mat:shot(.2,11,18.2,-2,3,1.8)}
+};
+let view=shots.wide,pull=1;
+// A shot with the camera pulled back along its line of sight; a phone held sideways is short enough
+// that the wide framing would otherwise crowd the box against the bottom edge.
+const at=([p,t])=>[t.clone().addScaledVector(p.clone().sub(t),pull),t.clone()];
 const clock=new THREE.Clock();
 const ease=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
 const tex = canvas => {const t=new THREE.CanvasTexture(canvas);t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=8;return t;};
@@ -109,8 +119,8 @@ async function init(){
  try{
  renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.VSMShadowMap;renderer.toneMapping=THREE.NeutralToneMapping;renderer.toneMappingExposure=1;
  // Fog matched to the background lets the floor dissolve into black with no horizon at any orbit angle.
- scene=new THREE.Scene();scene.background=new THREE.Color(0x060708);scene.fog=new THREE.Fog(0x060708,12,28);camera=new THREE.PerspectiveCamera(36,1,.1,150);camera.position.copy(homeCam);
- controls=new OrbitControls(camera,canvas);controls.target.copy(homeTarget);controls.enableDamping=true;controls.dampingFactor=.065;controls.enablePan=false;controls.minDistance=7;controls.maxDistance=30;controls.maxPolarAngle=Math.PI*.86;controls.minPolarAngle=.12;
+ scene=new THREE.Scene();scene.background=new THREE.Color(0x060708);scene.fog=new THREE.Fog(0x060708,12,28);camera=new THREE.PerspectiveCamera(36,1,.1,150);camera.position.copy(view.home[0]);
+ controls=new OrbitControls(camera,canvas);controls.target.copy(view.home[1]);controls.enableDamping=true;controls.dampingFactor=.065;controls.enablePan=false;controls.minDistance=7;controls.maxDistance=30;controls.maxPolarAngle=Math.PI*.86;controls.minPolarAngle=.12;
  // Black room with one large overhead softbox, drawn as an equirect canvas. On black stock
  // the diffuse term is nearly nil, so this reflection is what separates a lit top face from
  // dark sides and gives the foil something to flash; a light alone never shows up in it.
@@ -191,7 +201,16 @@ async function init(){
  raycaster=new THREE.Raycaster();ready=true;resize();controls.update();$('#loading').style.opacity='0';setTimeout(()=>$('#loading').remove(),550);requestAnimationFrame(render);
  }catch(error){console.error(error);$('#loading')?.remove();$('#error').hidden=false;}
 }
-function resize(){if(!renderer)return;const {width,height}=stage.getBoundingClientRect();renderer.setSize(width,height,false);camera.aspect=width/height;camera.fov=36;camera.updateProjectionMatrix();if(ready&&focus<0&&!anim){camera.position.copy(homeCam);controls.target.copy(homeTarget);}}
+function resize(){
+ if(!renderer)return;const {width,height}=stage.getBoundingClientRect();renderer.setSize(width,height,false);
+ const aspect=width/height;view=aspect<1?shots.tall:shots.wide;pull=aspect>2?1.14:1;camera.aspect=aspect;camera.fov=view.fov;camera.updateProjectionMatrix();
+ // Tall shots stand further back, so the zoom limits and the fog (measured from the camera) follow,
+ // or the box itself would sink into the haze.
+ if(focus<0)controls.maxDistance=view===shots.tall?34:30;
+ const reach=view===shots.tall?1.75:pull;scene.fog.near=12*reach;scene.fog.far=28*reach;
+ // Turning the phone re-frames whatever is on screen, including a product being held.
+ if(ready&&!anim){const [p,t]=focus>=0?(focus===2?view.mat:view.focus):at(lidAngle>1.4?view.box:view.home);camera.position.copy(p);controls.target.copy(t);}
+}
 function changeLid(deg){if(!ready||focus>=0||anim)return;lidTarget=deg*Math.PI/180;}
 function syncLidUI(){
  const deg=Math.round(lidAngle*180/Math.PI);if(deg===lidDeg)return;lidDeg=deg;
@@ -210,8 +229,8 @@ async function select(index){
  focus=index;$('#product-label').style.opacity=0;lastFocused=document.activeElement;const item=items[index];scene.attach(item);const start=item.position.clone(),q=item.quaternion.clone();
  // The box and desk stay put; the product simply lifts out and the camera dollies in.
  const target=new THREE.Vector3(-2,4.9,1.8);const rot=index===0?new THREE.Euler(.95,-.1,0):index===1?new THREE.Euler(0,-.15,0):new THREE.Euler(.32,0,-.12);const targetQ=new THREE.Quaternion().setFromEuler(rot);
- const cp=camera.position.clone(),ct=controls.target.clone();const focusTarget=new THREE.Vector3(-.55,4.6,1.6);const focusCam=index===2?new THREE.Vector3(2.8,8.9,15.8):new THREE.Vector3(1.9,7.6,10.2);
- controls.enabled=false;controls.enableRotate=false;controls.minDistance=4;controls.maxDistance=25;
+ const cp=camera.position.clone(),ct=controls.target.clone();const [focusCam,focusTarget]=index===2?view.mat:view.focus;
+ controls.enabled=false;controls.enableRotate=false;controls.minDistance=4;controls.maxDistance=view===shots.tall?30:25;
  const d=data[index];$('#detail-number').textContent='0'+(index+1)+' / 三種珍藏';$('#detail-title').textContent=d.name;$('#detail-subtitle').textContent=d.en;$('#detail-description').textContent=d.description;$('#detail-spec').replaceChildren(...d.spec.flatMap(([k,v])=>{const dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=k;dd.textContent=v;return[dt,dd];}));$('#unroll').hidden=index!==2;$('#unroll').textContent='展開滑鼠墊';$('#detail').classList.add('active');$('#detail').removeAttribute('inert');$('#detail').setAttribute('aria-hidden','false');$('main').classList.add('focusing');$('.bottom').inert=true;$('#close-detail').focus({preventScroll:true});
  transition(1200,t=>{item.position.lerpVectors(start,target,t);item.position.y+=Math.sin(t*Math.PI)*1.1;item.quaternion.slerpQuaternions(q,targetQ,t);camera.position.lerpVectors(cp,focusCam,t);controls.target.lerpVectors(ct,focusTarget,t);light(item,t);},()=>{controls.enabled=true;});
 }
@@ -219,7 +238,8 @@ function putBack(){
  if(focus<0||anim)return;const index=focus,item=items[index];controls.enabled=false;const from=item.position.clone(),q=item.quaternion.clone(),cp=camera.position.clone(),ct=controls.target.clone();unfoldTarget=0;
  $('#detail').classList.remove('active');$('#detail').setAttribute('aria-hidden','true');$('#detail').inert=true;$('main').classList.remove('focusing');$('.bottom').inert=false;
  const target=items[index].userData.home.clone().add(new THREE.Vector3(root.position.x,0,0));
- transition(1200,t=>{item.position.lerpVectors(from,target,t);item.position.y+=Math.sin(t*Math.PI)*1.1;item.quaternion.slerpQuaternions(q,item.userData.rotation,t);camera.position.lerpVectors(cp,boxCam,t);controls.target.lerpVectors(ct,boxTarget,t);light(item,1-t);},()=>{root.attach(item);item.position.copy(item.userData.home);item.quaternion.copy(item.userData.rotation);focus=-1;controls.enabled=true;controls.enableRotate=true;controls.minDistance=7;controls.maxDistance=30;if(lastFocused instanceof HTMLElement)lastFocused.focus({preventScroll:true});});
+ const [boxCam,boxTarget]=at(view.box);
+ transition(1200,t=>{item.position.lerpVectors(from,target,t);item.position.y+=Math.sin(t*Math.PI)*1.1;item.quaternion.slerpQuaternions(q,item.userData.rotation,t);camera.position.lerpVectors(cp,boxCam,t);controls.target.lerpVectors(ct,boxTarget,t);light(item,1-t);},()=>{root.attach(item);item.position.copy(item.userData.home);item.quaternion.copy(item.userData.rotation);focus=-1;controls.enabled=true;controls.enableRotate=true;controls.minDistance=7;controls.maxDistance=view===shots.tall?34:30;if(lastFocused instanceof HTMLElement)lastFocused.focus({preventScroll:true});});
 }
 const lidPlane=new THREE.Plane(new THREE.Vector3(0,0,1)),hinge=new THREE.Vector3();
 function castRay(event){const r=canvas.getBoundingClientRect();raycaster.setFromCamera(new THREE.Vector2((event.clientX-r.left)/r.width*2-1,-(event.clientY-r.top)/r.height*2+1),camera);}
