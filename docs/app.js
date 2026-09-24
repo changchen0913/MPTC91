@@ -128,7 +128,7 @@ async function init(){
  key.castShadow=true;key.shadow.mapSize.set(2048,2048);key.shadow.camera.near=4;key.shadow.camera.far=40;key.shadow.bias=-.0003;key.shadow.normalBias=.02;key.shadow.radius=10;key.shadow.blurSamples=16;scene.add(key);
  const rim=new THREE.SpotLight(0xc9d6e8,260,40,Math.PI*.2,1,2);rim.position.set(3,7,-13);rim.target.position.set(.4,1,0);scene.add(rim.target,rim); floor=new THREE.Group();scene.add(floor);
  root=new THREE.Group();scene.add(root);root.position.x=.7;
- const [coverArt,opened,matImg,logo,woodImage]=await Promise.all(['cover.png','open.png','mousepad.png','logo-white.png','walnut.png'].map(x=>loadImage('./assets/'+x)));
+ const [coverArt,opened,matImg,logo,woodImage]=await Promise.all(['cover.png','open.png','mousepad.webp','logo-white.png','walnut.png'].map(x=>loadImage('./assets/'+x)));
  // Raw, unfinished black walnut: stained far below the photo so only the spot's pool shows
  // grain, rough enough that nothing mirrors in it, with the open grain pushed up as relief.
  const wood=tex(woodImage);wood.wrapS=wood.wrapT=THREE.RepeatWrapping;wood.repeat.set(4,4);wood.anisotropy=renderer.capabilities.getMaxAnisotropy();
